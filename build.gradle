@@ -29,9 +29,27 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // OpenAPI/Swagger via springdoc for Spring Boot 3.x
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
+
+    // Override vulnerable commons-lang3 transitive dependency (CVE-2025-48924)
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+
+    // MapStruct for compile-time mapping
+    implementation 'org.mapstruct:mapstruct:1.6.2'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
+
+    // Lombok (and Lombok-MapStruct binding for smoother AP processing order)
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Embedded H2 database for JPA tests
+    testRuntimeOnly 'com.h2database:h2'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

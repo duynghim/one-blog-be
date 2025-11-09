@@ -11,6 +11,7 @@ import com.onenotebe.repository.PostRepository;
 import com.onenotebe.repository.CategoryRepository;
 import com.onenotebe.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -34,7 +35,7 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Cacheable(cacheNames = "postsBySlug", key = "#slug")
-    public PostDetailDto getBySlug(String slug) {
+    public PostDetailDto getBySlug(@NonNull String slug) {
         log.debug("Retrieving post by slug [{}]", slug);
         var post = postRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found for slug: " + slug));
@@ -43,7 +44,7 @@ public class PostService {
     }
 
     @Cacheable(cacheNames = "postsById", key = "#id")
-    public PostDetailDto getById(Long id) {
+    public PostDetailDto getById(@NonNull Long id) {
         log.debug("Retrieving post by id [{}]", id);
         var post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(POST_NOT_FOUND + id));
@@ -60,7 +61,7 @@ public class PostService {
         return result;
     }
 
-    public PostDetailDto create(CreatePostDto dto, String authorUsername) {
+    public PostDetailDto create(@NonNull CreatePostDto dto, @NonNull String authorUsername) {
         log.info("Creating post [title={}]", dto.title());
         var author = userRepository.findByUsername(authorUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + authorUsername));
@@ -73,12 +74,12 @@ public class PostService {
                 .author(author)
                 .categories(categories)
                 .build();
-        var saved = postRepository.save(post);
+        Post saved = postRepository.save(post);
         log.info("Post created [id={}, slug={}]", saved.getId(), saved.getSlug());
         return postMapper.toDetailDto(saved);
     }
 
-    public PostDetailDto update(Long id, CreatePostDto dto) {
+    public PostDetailDto update(@NonNull Long id, @NonNull CreatePostDto dto) {
         log.info("Updating post [id={}, title={}]", id, dto.title());
         var post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(POST_NOT_FOUND + id));
@@ -92,7 +93,7 @@ public class PostService {
         return postMapper.toDetailDto(saved);
     }
 
-    public void delete(Long id) {
+    public void delete(@NonNull Long id) {
         log.info("Deleting post [id={}]", id);
         var post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(POST_NOT_FOUND + id));

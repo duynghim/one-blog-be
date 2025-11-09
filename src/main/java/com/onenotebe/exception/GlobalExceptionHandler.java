@@ -53,6 +53,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResult.error(error));
     }
 
+    @ExceptionHandler({DuplicateUsernameException.class, DuplicateEmailException.class})
+    public ResponseEntity<ApiResult<Void>> handleDuplicate(RuntimeException ex) {
+        log.warn("Duplicate resource: {}", ex.getMessage());
+        var error = new ApiError("CONFLICT", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResult.error(error));
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiResult<Void>> handleRateLimit(RateLimitExceededException ex) {
+        log.warn("Rate limit exceeded: {}", ex.getMessage());
+        var error = new ApiError("TOO_MANY_REQUESTS", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResult.error(error));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResult<Void>> handleAccessDenied(AccessDeniedException ex) {
         log.warn("Access denied: {}", ex.getMessage());

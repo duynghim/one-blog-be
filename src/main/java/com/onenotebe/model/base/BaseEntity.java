@@ -7,9 +7,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import java.time.Instant;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -58,4 +60,20 @@ public abstract class BaseEntity {
     @LastModifiedDate
     @Column(nullable = false)
     protected Instant updatedAt;
+
+    /**
+     * Username of the user who created this entity.
+     * Populated automatically by Spring Data JPA auditing.
+     */
+    @CreatedBy
+    @Column(name = "created_by", updatable = false)
+    protected Long createdBy;
+
+    /**
+     * Username of the user who last modified this entity.
+     * Populated automatically by Spring Data JPA auditing.
+     */
+    @LastModifiedBy
+    @Column(name = "updated_by")
+    protected Long updatedBy;
 }

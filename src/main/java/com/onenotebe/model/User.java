@@ -8,11 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * User entity storing credentials and role.
@@ -20,12 +16,14 @@ import lombok.ToString;
  */
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_user_username", columnList = "username")
+        @Index(name = "idx_user_username", columnList = "username"),
+        @Index(name = "idx_user_email", columnList = "email")
 })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@Builder
 public class User extends BaseEntity {
 
     @NotBlank
@@ -36,6 +34,10 @@ public class User extends BaseEntity {
     @ToString.Exclude
     @Column(nullable = false)
     private String password;
+
+    @NotBlank
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -12,7 +12,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.CacheControl;
@@ -51,11 +53,10 @@ public class CategoryController {
     @PreAuthorize("isAnonymous() or hasAnyRole('USER','ADMIN')")
     public ResponseEntity<ApiResult<List<CategoryDto>>> list(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         log.debug("Listing categories via API [page={}, size={}]", page, size);
         var data = categoryService.findAll(page, size);
-        var cacheControl = CacheControl.maxAge(java.time.Duration.ofSeconds(60)).cachePublic();
+        var cacheControl = CacheControl.maxAge(Objects.requireNonNull(Duration.ofSeconds(60))).cachePublic();
         var headers = new HttpHeaders();
         headers.setCacheControl(cacheControl.toString());
         return ResponseEntity.ok().headers(headers).body(ApiResult.success(data));
@@ -74,7 +75,8 @@ public class CategoryController {
     @ApiResponse(responseCode = "200", description = "Category updated", content = @Content(schema = @Schema(implementation = ApiResponse.class)))
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResult<CategoryDto>> update(@PathVariable Long id, @Valid @RequestBody UpdateCategoryDto dto) {
+    public ResponseEntity<ApiResult<CategoryDto>> update(@PathVariable Long id,
+            @Valid @RequestBody UpdateCategoryDto dto) {
         var updated = categoryService.update(id, dto);
         return ResponseEntity.ok(ApiResult.success(updated));
     }

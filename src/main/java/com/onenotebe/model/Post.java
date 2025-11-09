@@ -11,17 +11,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Simple test entity extending BaseEntity to verify inheritance and auditing.
+ * Blog Post entity representing published content.
+ * Extends BaseEntity for ID and auditing timestamps.
  */
 @Entity
-@Table(name = "test_notes")
+@Table(name = "posts")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TestNote extends BaseEntity {
+public class Post extends BaseEntity {
 
     @Column(nullable = false)
     private String title;
+
+    @Column(nullable = false, unique = true)
+    private String slug;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content;
+
+    @Column
+    private String featuredImageUrl;
 }

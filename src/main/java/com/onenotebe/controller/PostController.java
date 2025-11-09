@@ -1,6 +1,7 @@
 package com.onenotebe.controller;
 
 import com.onenotebe.api.ApiResult;
+import com.onenotebe.dto.CreatePostDto;
 import com.onenotebe.dto.PostDetailDto;
 import com.onenotebe.dto.PostSummaryDto;
 import com.onenotebe.service.PostService;
@@ -15,12 +16,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -87,5 +95,71 @@ public class PostController {
         // Weak ETag based on id and updatedAt to assist caching
         var updated = detail.updatedAt() != null ? detail.updatedAt().toEpochMilli() : 0L;
         return "W/\"" + detail.id() + "-" + updated + "\"";
+    }
+
+    @Operation(
+            summary = "Create post",
+            description = "Admin-only: create a new post and assign categories",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Post created",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "400", description = "Validation error",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "403", description = "Forbidden",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class)))
+            }
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<ApiResult<PostDetailDto>> create(@Valid @RequestBody CreatePostDto dto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        var username = auth.getName();
+        var created = postService.create(dto, username);
+        return ResponseEntity.status(201).body(ApiResult.success(created));
+    }
+
+    @Operation(
+            summary = "Update post",
+            description = "Admin-only: update an existing post and its categories",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Post updated",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "400", description = "Validation error",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "404", description = "Post not found",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "403", description = "Forbidden",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class)))
+            }
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResult<PostDetailDto>> update(@PathVariable Long id, @Valid @RequestBody CreatePostDto dto) {
+        var updated = postService.update(id, dto);
+        return ResponseEntity.ok(ApiResult.success(updated));
+    }
+
+    @Operation(
+            summary = "Delete post",
+            description = "Admin-only: delete a post by ID",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Post deleted"),
+                    @ApiResponse(responseCode = "404", description = "Post not found",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class))),
+                    @ApiResponse(responseCode = "403", description = "Forbidden",
+                            content = @Content(schema = @Schema(implementation = ApiResult.class)))
+            }
+    )
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        postService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
